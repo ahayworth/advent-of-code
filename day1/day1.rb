@@ -1,11 +1,14 @@
-#!/usr/bin/env ruby
+class Day1
+  attr_reader :expenses
 
-#DESIRED_ENTRIES = 2
-DESIRED_ENTRIES = 3
+  def initialize(expenses: [])
+    @expenses = expenses
+  end
 
-expense_report = ARGF.lines.map(&:to_i)
-match = expense_report
-  .combination(DESIRED_ENTRIES)
-  .find { |arr| arr.inject(&:+) == 2020 }
-
-puts match.inject(&:*)
+  def calculate_2020(entries: 2)
+    expenses
+      .combination(entries)
+      .find { |arr| arr.sum == 2020 }
+      .inject(&:*)
+  end
+end
