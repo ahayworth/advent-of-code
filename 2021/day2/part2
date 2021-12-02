@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+#
+input = File.read(ARGV[0] || "input").split("\n")
+
+horizontal = 0
+depth = 0
+aim = 0
+
+input.each do |line|
+  direction, amount = line.split(" ")
+  amount = amount.to_i
+  if direction == "forward"
+    horizontal += amount
+    depth += aim * amount
+  elsif direction == "down"
+    aim += amount
+  elsif direction == "up"
+    aim -= amount
+  end
+end
+
+puts horizontal * depth
