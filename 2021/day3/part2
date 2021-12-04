@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+def bit_filter(bit_arrays, index = 0, &block)
+  selector = yield bit_arrays.map { |a| a[index] }.tally
+  kept = bit_arrays.select { |a| a[index] == selector }
+  if kept.length > 1
+    kept = bit_filter(kept, index + 1, &block)
+  end
+
+  return kept.flatten
+end
+
+
+input = File
+  .read(ARGV[0] || "input")
+  .lines
+  .map { |l| l.chomp.split("").map(&:to_i) }
+
+o2_generator_rating = bit_filter(input) do |tally|
+  if tally.values.uniq.length == 1
+    1
+  else
+    # { 1 => 487, 0 => 513 } -> [0, 513] -> 0
+    tally.max_by { |_, v| v }.first
+  end
+end
+
+co2_scrubber_rating = bit_filter(input) do |tally|
+  if tally.values.uniq.length == 1
+    0
+  else
+    # { 1 => 487, 0 => 513 } -> [1, 487] -> 1 
+    tally.min_by { |_, v| v }.first
+  end
+end
+
+o2_generator_rating = o2_generator_rating.join.to_i(2)
+co2_scrubber_rating = co2_scrubber_rating.join.to_i(2)
+
+puts o2_generator_rating * co2_scrubber_rating
