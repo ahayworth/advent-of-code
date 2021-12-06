@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+require_relative './bingo_board.rb'
+
+calls = []
+boards = []
+
+input_lines = File.read(ARGV[0] || "input").lines
+input_lines.each_with_index do |line, idx|
+  if idx == 0
+    calls = line.chomp.split(",").map(&:to_i)
+    next
+  end
+
+  if line == "\n" && (idx + 1) < input_lines.length
+    boards << []
+    next
+  end
+
+  boards.last << line.strip.split(/\s+/).map(&:to_i)
+end
+boards = boards.map { |b| BingoBoard.new(b) }
+
+last_board = nil
+last_call = nil
+
+calls.each do |n|
+  boards.each do |b|
+    b.mark!(n)
+    if b.bingo?
+      last_board = b
+      last_call = n
+    end
+  end
+  boards = boards.reject { |b| b.bingo? }
+end
+
+puts last_board.unmarked.sum * last_call
