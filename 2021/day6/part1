@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+class Lanternfish
+  attr_reader :spawn_timer
+
+  def initialize(timer_position = 8)
+    @spawn_timer = timer_position
+  end
+
+  def live
+    if @spawn_timer > 0
+      @spawn_timer -= 1
+    end
+  end
+
+  def can_spawn?
+    @spawn_timer == 0
+  end
+
+  def spawn
+    return unless can_spawn?
+
+    @spawn_timer = 6
+    Lanternfish.new
+  end
+end
+
+school = File.read(ARGV[0] || "input").split(",").map do |n|
+  Lanternfish.new(n.to_i)
+end
+
+80.times do
+  new_fish = []
+  school.each do |fish|
+    if fish.can_spawn?
+      new_fish << fish.spawn
+    else
+      fish.live
+    end
+  end
+
+  school += new_fish
+end
+
+puts school.size
