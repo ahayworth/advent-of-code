@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+class Point
+  attr_accessor :x, :y
+
+  def initialize(x, y)
+    @x = x
+    @y = y
+  end
+
+  def ==(other)
+    x == other.x && y == other.y
+  end
+
+  def <=>(other)
+    [x, y] <=> [other.x, other.y]
+  end
+end
+
+class Line
+  include Enumerable
+
+  attr_reader :start_point, :end_point
+
+  def initialize(start_point, end_point)
+    @start_point = start_point
+    @end_point = end_point
+  end
+
+  def each_point(&block)
+    return enum_for(:each_point) unless block_given?
+    p_current, p_end = [start_point, end_point].sort
+
+    loop do
+      yield p_current
+
+      break if p_current == p_end
+      p_current = Point.new(
+        (p_current.x < p_end.x ? p_current.x.next : p_end.x),
+        (p_current.y < p_end.y ? p_current.y.next : p_end.y)
+      )
+    end
+  end
+end
+
+map = []
+
+File.read(ARGV[0] || "input").lines.map(&:chomp).each do |line|
+  pair1, pair2 = line.split(" -> ")
+
+  p1 = Point.new(*pair1.split(",").map(&:to_i))
+  p2 = Point.new(*pair2.split(",").map(&:to_i))
+
+  # Shortcut, as per instructions - not considering diagonal lines.
+  next unless p1.x == p2.x || p1.y == p2.y
+  Line.new(p1, p2).each_point do |p|
+    map[p.x] ||= []
+    map[p.x][p.y] ||= 0
+    map[p.x][p.y] += 1
+  end
+end
+
+puts map.flatten.compact.select { |c| c >= 2 }.count
