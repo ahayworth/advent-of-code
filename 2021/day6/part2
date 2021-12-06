@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+class School
+  attr_reader :fish
+
+  def initialize(initial_fish)
+    @fish = Array.new(9, 0)
+    initial_fish.each do |f|
+      @fish[f] += 1
+    end
+  end
+
+  def live_another_day
+    spawning = @fish.shift
+    @fish << spawning
+    @fish[6] += spawning
+  end
+end
+
+input = File.read(ARGV[0] || "input").split(",").map(&:to_i)
+school = School.new(input)
+256.times { school.live_another_day }
+puts school.fish.sum
