@@ -1,1 +1,20 @@
 #!/usr/bin/env ruby
+
+require_relative './line.rb'
+
+map = []
+
+File.read(ARGV[0] || "input").lines.map(&:chomp).each do |line|
+  pair1, pair2 = line.split(" -> ")
+
+  p1 = Point.new(*pair1.split(",").map(&:to_i))
+  p2 = Point.new(*pair2.split(",").map(&:to_i))
+
+  Line.new(p1, p2).each_point do |p|
+    map[p.x] ||= []
+    map[p.x][p.y] ||= 0
+    map[p.x][p.y] += 1
+  end
+end
+
+puts map.flatten.compact.select { |c| c >= 2 }.count

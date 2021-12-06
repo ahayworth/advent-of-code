@@ -1,47 +1,6 @@
 #!/usr/bin/env ruby
 
-class Point
-  attr_accessor :x, :y
-
-  def initialize(x, y)
-    @x = x
-    @y = y
-  end
-
-  def ==(other)
-    x == other.x && y == other.y
-  end
-
-  def <=>(other)
-    [x, y] <=> [other.x, other.y]
-  end
-end
-
-class Line
-  include Enumerable
-
-  attr_reader :start_point, :end_point
-
-  def initialize(start_point, end_point)
-    @start_point = start_point
-    @end_point = end_point
-  end
-
-  def each_point(&block)
-    return enum_for(:each_point) unless block_given?
-    p_current, p_end = [start_point, end_point].sort
-
-    loop do
-      yield p_current
-
-      break if p_current == p_end
-      p_current = Point.new(
-        (p_current.x < p_end.x ? p_current.x.next : p_end.x),
-        (p_current.y < p_end.y ? p_current.y.next : p_end.y)
-      )
-    end
-  end
-end
+require_relative './line'
 
 map = []
 
