@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+crab_positions = File.read(ARGV[0] || "input").split(",").map(&:to_i)
+cheapest_fuel_cost = nil
+
+(0..crab_positions.max).each do |test_position|
+  fuel_cost = crab_positions.map do |cp|
+    steps = (0..(test_position - cp).abs)
+    steps.sum
+  end.sum
+
+  if cheapest_fuel_cost.nil? || fuel_cost < cheapest_fuel_cost
+    cheapest_fuel_cost = fuel_cost
+  end
+end
+
+puts cheapest_fuel_cost
