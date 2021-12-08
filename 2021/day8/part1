@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+# We could do this programmatically, but ... eh.
+# 1 => 2 segments, 4 => 4 segments, 7 => 3 segments, 8 => 7 segments
+UNIQUE_SEGMENTS = [2, 4, 3, 7]
+
+unique_segment_occurences = 0
+File.read(ARGV[0] || "input").each_line do |line|
+  lit_digits = line.chomp.split(" | ").last.split(" ")
+  unique_segment_occurences += lit_digits.count do |digit|
+    UNIQUE_SEGMENTS.include?(digit.length)
+  end
+end
+
+puts unique_segment_occurences

@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+require 'set'
+
+sum = 0
+
+File.read(ARGV[0] || "input").each_line do |line|
+  signals, lit_digits = line.chomp.split(" | ").map do |value|
+    value.chomp.split(" ")
+  end
+
+  known_signals = {
+    1 => signals.find { |s| s.length == 2 },
+    4 => signals.find { |s| s.length == 4 },
+    7 => signals.find { |s| s.length == 3 },
+    8 => signals.find { |s| s.length == 7 },
+  }
+
+  len6 = signals.select { |s| s.length == 6 }
+  # There are now three remaining signals with 6 characters.
+  # We can find the signal that represents '6' by looking for the
+  # 6-character signal *without* the two known components of the
+  # '1' signal.
+  known_signals[6] = len6.find do |s|
+    !known_signals[1].chars.all? { |c| s.chars.include?(c) }
+  end
+
+  # Of our 6-digit characters, we know that the '4' character
+  # overlaps completely with '9', and partially with both '0'
+  # and '6'. If we exclude '6' from the search, we can use that.
+  # The remaining signal that completely overlaps with '4' must
+  # be '9'.
+  known_signals[9] = (len6 - [known_signals[6]]).find do |s|
+    known_signals[4].chars.all? { |c| s.chars.include?(c) }
+  end
+
+  # The '0' character is the only one left.
+  known_signals[0] = (len6 - [known_signals[6], known_signals[9]])[0]
+
+  # We now have 7 out of 10 signals mapped. The remaining signals
+  # are all of length 5, and we do a similar process to find them.
+  len5 = signals.select { |s| s.length == 5 }
+
+  # We have three unclassified signals - '2', '3', and '5'.
+  # We know we can overlay '9' on '2' and it equals '8'. But that
+  # isn't true for '3' or '5', so that uniquely finds '2'.
+  known_signals[2] = len5.find do |s|
+    (s.chars + known_signals[9].chars).uniq.sort == known_signals[8].chars.sort
+  end
+
+  # '5' on '1' will give us '9'; '3' on '1' would not.
+  known_signals[5] = len5.find do |s|
+    (s.chars + known_signals[1].chars).uniq.sort == known_signals[9].chars.sort
+  end
+
+  # The only signal left is '3'.
+  known_signals[3] = (len5 - [known_signals[2], known_signals[5]])[0]
+
+  # Now that we have mapped everything, we can decode our display:
+  known_signals = known_signals
+    .transform_keys { |k| k.to_s }
+    .transform_values { |v| v.chars.sort.join }
+    .invert
+
+  display = lit_digits.map do |ld|
+    known_signals[ld.chars.sort.join]
+  end
+
+  # And add it to the tally:
+  sum += display.join.to_i
+end
+
+puts sum
