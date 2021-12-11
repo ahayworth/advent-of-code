@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+@octopodes = File.read(ARGV[0] || "input").lines.map do |line|
+  line.chomp.chars.map(&:to_i)
+end
+
+@flashes = 0
+
+def step
+  # Increase energy
+  @octopodes = @octopodes.map do |row|
+    row.map { |octopus| octopus += 1 }
+  end
+
+  loop do
+    flashed = false
+
+    @octopodes.each_index do |row_idx|
+      @octopodes[row_idx].each_index do |octopus_idx|
+        if @octopodes[row_idx][octopus_idx] > 9
+          @flashes += 1
+          flashed = true
+
+          surrounding_octopodes = [
+            [row_idx - 1, octopus_idx - 1],
+            [row_idx - 1, octopus_idx],
+            [row_idx - 1, octopus_idx + 1],
+            [row_idx, octopus_idx - 1],
+            [row_idx, octopus_idx + 1],
+            [row_idx + 1, octopus_idx - 1],
+            [row_idx + 1, octopus_idx],
+            [row_idx + 1, octopus_idx + 1],
+          ].reject do |(y, x)|
+            y < 0 || x < 0 || @octopodes[y].nil? || @octopodes[y][x].nil?
+          end
+
+          surrounding_octopodes.each do |(y, x)|
+            if @octopodes[y][x] > 0 && @octopodes[y][x] <= 9
+              @octopodes[y][x] += 1
+            end
+          end
+
+          @octopodes[row_idx][octopus_idx] = 0
+        end
+      end
+    end
+
+    break unless flashed
+  end
+end
+
+count = 0
+loop do
+  count += 1
+  step
+
+  break if @octopodes.flatten.uniq == [0]
+end
+
+puts count
