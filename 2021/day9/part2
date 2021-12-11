@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+@map = []
+File.read(ARGV[0] || "input").each_line do |row|
+  @map << row.chomp.split('').map(&:to_i)
+end
+
+low_points = []
+@map.each_with_index do |row, y|
+  row.each_with_index do |loc, x|
+    to_check = [
+      [y, x + 1],
+      [y, x - 1],
+      [y + 1, x],
+      [y - 1, x],
+    ]
+
+    # We need to filter out negative numbers, because
+    # ruby allows for reverse-indexing from the end of the
+    # array. We don't need to check for going past the end,
+    # because that will be nil.
+    to_check.reject! { |(y, x)| y < 0 || x < 0 }
+
+    adjacents = to_check.map do |(y, x)|
+      (@map[y] || [])[x]
+    end.compact
+
+    low_points << [y, x] unless adjacents.any? { |x| x <= loc }
+  end
+end
+
+def walk(y, x, path)
+  path << [y, x]
+
+  if @map[y][x] != 9
+    to_check = [
+      [y, x + 1],
+      [y, x - 1],
+      [y + 1, x],
+      [y - 1, x],
+    ].reject do |(cy, cx)|
+      cy < 0 || cx < 0 || @map[cy].nil?  || @map[cy][cx].nil? ||
+        path.include?([cy, cx])
+    end
+
+    to_check.each do |(cy, cx)|
+      walk(cy, cx, path)
+    end
+  end
+
+  path
+end
+
+sizes = low_points.map do |(y, x)|
+  path = []
+  path = walk(y, x, path)
+  path.uniq.count { |(py, px)| @map[py][px] != 9 }
+end
+
+puts sizes.max(3).inject(:*)
