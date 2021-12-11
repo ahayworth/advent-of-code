@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+OPENERS = ['(', '[', '{', '<']
+CLOSERS = [')', ']', '}', '>']
+
+illegal_chars = []
+File.read(ARGV[0] || "input").lines.map(&:chomp).each do |line|
+  stack = []
+  line.each_char do |c|
+    if OPENERS.include?(c)
+      stack << c
+    elsif CLOSERS.include?(c)
+      expected_closer = CLOSERS[OPENERS.index(stack.pop)]
+      if c != expected_closer
+        illegal_chars << c
+        break
+      end
+    end
+  end
+end
+
+sum = illegal_chars.sum do |c|
+  case c
+  when ')'
+    3
+  when ']'
+    57
+  when '}'
+    1197
+  when '>'
+    25137
+  end
+end
+puts sum
