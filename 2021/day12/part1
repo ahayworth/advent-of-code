@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+@nodes = {}
+@completed_paths = []
+
+def walk(next_node, path)
+  path << next_node
+  if next_node == "end"
+    # Holy side-effects, batman!
+    @completed_paths << path
+    return path
+  end
+
+  @nodes[next_node].map do |n|
+    # We can't walk back through 'start'.
+    next if n == "start"
+    # We can't double back through a small room.
+    next if (n == n.downcase && path.include?(n))
+
+    walk(n, path.dup)
+  end.compact
+end
+
+File.read(ARGV[0] || "input").each_line do |line|
+  n1, n2 = line.chomp.split("-")
+
+  @nodes[n1] ||= []
+  @nodes[n2] ||= []
+
+  @nodes[n1] << n2
+  @nodes[n2] << n1
+end
+
+walk("start", [])
+pp @completed_paths.length
