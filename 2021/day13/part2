@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+
+def fold_y(map, position)
+  new_map = []
+
+  top = map[0 .. position - 1]
+  bottom = map[position + 1 .. -1].reverse
+
+  size = map.first.size
+  diff = (top.size - bottom.size).abs
+  diff.times do
+    (top.size > bottom.size ? bottom : top).unshift Array.new(size)
+  end
+
+  top.zip(bottom) do |tr, br|
+    new_row = []
+    tr.zip(br) { |l, r| new_row << (l || r) }
+    new_map << new_row
+  end
+
+  new_map
+end
+
+def fold_x(map, position)
+  new_map = []
+
+  map.each do |row|
+    row ||= []
+
+    left = (row[0 .. position -1] || [])
+    right = (row[position + 1 .. -1] || []).reverse
+
+    diff = (left.size - right.size).abs
+    diff.times { (left.size > right.size ? right : left).unshift nil }
+
+    new_row = []
+    left.zip(right) do |l, r|
+      new_row << (l || r)
+    end
+
+    new_map << new_row
+  end
+
+  new_map
+end
+
+coordinates = []
+instructions = []
+
+File.read(ARGV[0] || "input").each_line do |line|
+  next if line == "\n"
+
+  if line.start_with?("fold")
+    axis, n = line.sub(/fold along /, '').chomp.split("=")
+    instructions << { axis: axis, position: n.to_i }
+  else
+    col, row = line.chomp.split(",").map(&:to_i)
+    coordinates << [row, col]
+  end
+end
+
+map = []
+
+n_rows = coordinates.max_by(&:first)[0] + 1
+n_cols = coordinates.max_by(&:last)[1] + 1
+n_rows.times { map << Array.new(n_cols) }
+
+coordinates.each { |(row, col)| map[row][col] = 1 }
+
+instructions.each do |i|
+  map = self.send(:"fold_#{i[:axis]}", map, i[:position])
+end
+
+map.each do |row|
+  puts row.map { |col| col.nil? ? "." : "X" }.join
+end
