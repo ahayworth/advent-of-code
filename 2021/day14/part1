@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+def transform(template, rules)
+  new_template = []
+  old_template = template.chars
+
+  until old_template.empty? do
+    pair = old_template.shift(2)
+    if to_insert = rules[pair.join]
+      new_template << pair.shift << to_insert
+      old_template.unshift(*pair)
+    else
+      new_template += pair
+    end
+  end
+
+  new_template.join
+end
+
+template = nil
+rules = {}
+
+File.read(ARGV[0] || "input").each_line do |line|
+  next if line == "\n"
+
+  if line.match? "->"
+    pair, new_element = line.split("->").map(&:strip)
+    rules[pair] = new_element
+  else
+    template = line.chomp
+  end
+end
+
+10.times { template = transform(template, rules) }
+count = template.chars.tally
+most_common_element_freq = count.max_by { |_, v| v }[1]
+least_common_element_freq = count.min_by { |_, v| v }[1]
+
+puts most_common_element_freq - least_common_element_freq

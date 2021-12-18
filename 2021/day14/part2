@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+def transform(template, rules)
+  new_template = {}
+  template.each do |pair, n|
+    new_char = rules[pair]
+
+    [[pair[0], new_char], [new_char, pair[1]]].each do |new_pair|
+      new_template[new_pair] ||= 0
+      new_template[new_pair] += n
+    end
+  end
+
+  new_template
+end
+
+last_char = nil
+template = {}
+rules = {}
+
+File.read(ARGV[0] || "input").each_line do |line|
+  next if line == "\n"
+
+  if line.match? "->"
+    pair, new_element = line.split("->").map(&:strip)
+    rules[pair.chars] = new_element
+  else
+    chars = line.chomp.chars
+    last_char = chars.last
+    template = chars.each_cons(2).tally
+  end
+end
+
+40.times do
+  template = transform(template, rules)
+end
+
+count = {}
+template.each do |pair, n|
+  count[pair.first] ||= 0
+  count[pair.first] += n
+end
+
+count[last_char] += 1
+
+min, max = count.values.minmax
+puts max - min
