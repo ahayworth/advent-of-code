@@ -1,0 +1,127 @@
+#!/usr/bin/env ruby
+
+HEX_TO_BIN = {
+  "0" => "0000",
+  "1" => "0001",
+  "2" => "0010",
+  "3" => "0011",
+  "4" => "0100",
+  "5" => "0101",
+  "6" => "0110",
+  "7" => "0111",
+  "8" => "1000",
+  "9" => "1001",
+  "A" => "1010",
+  "B" => "1011",
+  "C" => "1100",
+  "D" => "1101",
+  "E" => "1110",
+  "F" => "1111",
+}
+
+class Packet
+  class Type
+    SUM          = 0
+    PRODUCT      = 1
+    MINIMUM      = 2
+    MAXIMUM      = 3
+    LITERAL      = 4
+    GREATER_THAN = 5
+    LESS_THAN    = 6
+    EQUAL_TO     = 7
+  end
+
+  attr_reader :version, :type, :subpackets, :trailer
+
+  def initialize(bitstring)
+    bits = bitstring.chars
+
+    @version = bits.shift(3).join.to_i(2)
+    @type    = bits.shift(3).join.to_i(2)
+
+    @subpackets = []
+
+    case type
+    when Packet::Type::LITERAL
+      value = []
+      while bits.length >= 5
+        group = bits.shift(5)
+        value << group[1..-1].join
+        break if group[0] == "0"
+      end
+      @value = value.join.to_i(2)
+    else # operator
+      length_type_id = bits.shift
+      if length_type_id == "0"
+        subpacket_len = bits.shift(15).join.to_i(2)
+        new_bitstr = bits.shift(subpacket_len)
+
+        while subpacket_len - new_bitstr.length < subpacket_len
+          subpacket = Packet.new(new_bitstr.join)
+          new_bitstr = subpacket.trailer
+          @subpackets << subpacket
+        end
+      elsif length_type_id == "1"
+        subpacket_len = bits.shift(11).join.to_i(2)
+        while @subpackets.length < subpacket_len
+          subpacket = Packet.new(bits.join)
+          bits = subpacket.trailer
+          @subpackets << subpacket
+        end
+      end
+    end
+
+    @trailer = bits
+  end
+
+  def value
+    if type == Packet::Type::LITERAL
+      @value
+    else
+      values = subpackets.map(&:value)
+      case type
+      when Packet::Type::SUM
+        values.sum
+      when Packet::Type::PRODUCT
+        values.inject(&:*)
+      when Packet::Type::MINIMUM
+        values.min
+      when Packet::Type::MAXIMUM
+        values.max
+      when Packet::Type::GREATER_THAN
+        values[0] > values[1] ? 1 : 0
+      when Packet::Type::LESS_THAN
+        values[0] < values[1] ? 1 : 0
+      when Packet::Type::EQUAL_TO
+        values[0] == values[1] ? 1 : 0
+      end
+    end
+  end
+
+  def to_s
+    type_str = type == Packet::Type::LITERAL ? 'LITERAL' : 'OPERATOR'
+
+    "#<Packet @type=#{type_str}, @version=#{version}, @value=#{value}, @trailer=#{trailer.join}>"
+  end
+
+  def inspect
+    to_s
+  end
+end
+
+def sum_versions(packet)
+  if packet.type == Packet::Type::LITERAL
+    packet.version
+  else
+    packet.version + packet.value.inject(0) do |accum, p|
+      accum += sum_versions(p)
+      accum
+    end
+  end
+end
+
+input = File.read(ARGV[0] || "input").chomp.chars.map do |c|
+  HEX_TO_BIN[c]
+end.join
+
+puts Packet.new(input).value
