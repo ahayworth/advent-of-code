@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+def manhattan_distance(n1, n2)
+  (n2.x - n1.x).abs + (n2.y - n1.y).abs
+end
+
+Node = Struct.new(:x, :y, :risk)
+
+node_map = []
+node_neighbors = {}
+
+File.read(ARGV[0] || "input").lines.each_with_index do |line, y|
+  node_row = []
+  line.chomp.split('').each_with_index do |risk, x|
+    node_row << Node.new(x, y, risk.to_i)
+  end
+  node_map << node_row
+end
+
+node_map.each_with_index do |row, y|
+  row.each_with_index do |node, x|
+    neighbor_coordinates = [
+      [x,     y - 1],
+      [x,     y + 1],
+      [x - 1, y    ],
+      [x + 1, y    ],
+    ].reject { |(x, y)| x < 0 || y < 0 }
+
+    neighbor_coordinates.each do |(x, y)|
+      other = (node_map[y] || [])[x]
+      node_neighbors[node] ||= []
+      node_neighbors[node] << other unless other.nil?
+    end
+  end
+end
+
+starting_node = node_map[0][0]
+ending_node   = node_map.last.last
+
+to_visit = []
+to_visit << starting_node
+
+cheapest_path_to = {}
+cheapest_path_to[starting_node] = 0
+
+heuristic_path_to = {}
+heuristic_path_to[starting_node] = manhattan_distance(starting_node, ending_node)
+
+while to_visit.any?
+  current_node = to_visit.min_by { |n| heuristic_path_to[n] }
+  to_visit.delete(current_node)
+
+  break if current_node == ending_node
+
+  node_neighbors[current_node].each do |neighbor|
+    tentative_path_cost = cheapest_path_to[current_node] + neighbor.risk
+    if cheapest_path_to[neighbor].nil? || tentative_path_cost < cheapest_path_to[neighbor]
+      cheapest_path_to[neighbor] = tentative_path_cost
+      heuristic_path_to[neighbor] = tentative_path_cost + manhattan_distance(neighbor, ending_node)
+      to_visit << neighbor unless to_visit.include?(neighbor)
+    end
+  end
+end
+
+puts cheapest_path_to[ending_node]
