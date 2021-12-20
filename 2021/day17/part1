@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+
+class Probe
+  attr_reader :x, :y, :vx, :vy, :y_max
+  def initialize(vx, vy)
+    @x = 0
+    @y = 0
+    @y_max = 0
+
+    @vx = vx
+    @vy = vy
+  end
+
+  def step!
+    @x += vx
+    @y += vy
+    @y_max = @y if @y_max < @y
+
+    @vy -= 1
+    if @vx != 0
+      @vx += (@vx.positive? ? -1 : 1)
+    end
+  end
+end
+
+x_range, y_range = File.read(ARGV[0] || "input")
+  .chomp
+  .sub(/target area: /, '')
+  .split(', ').map do |str|
+    Range.new(*str.sub(/[xy]=/, '').split('..').map(&:to_i))
+  end
+
+# Firing a rocket with an x velocity greater than this value
+# guarantees that it could never, ever land in the target zone.
+vx_max = x_range.max
+
+# Similarly, we cannot ever fire a probe with a y velocity lower
+# than this, or we're guaranteed to never hit the target.
+vy_min = y_range.min
+
+successes = []
+
+(0..vx_max).each do |vx|
+  (vy_min..100).each do |vy|
+    p = Probe.new(vx, vy)
+
+    loop do
+      p.step!
+      if x_range.include?(p.x) && y_range.include?(p.y)
+        successes << p
+        break
+      elsif p.x > x_range.max || p.y < y_range.min
+        break
+      end
+    end
+  end
+end
+
+pp successes.max_by { |p| p.y_max }
