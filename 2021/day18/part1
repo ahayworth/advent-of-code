@@ -1,0 +1,119 @@
+#!/usr/bin/env ruby
+
+def explode(snail_number)
+  str = []
+  n_accum = []
+  snail_number.to_s.chars.each do |c|
+    next if c == ' '
+    if /\d/.match?(c)
+      n_accum << c
+    else
+      if n_accum.any?
+        str << n_accum.join
+        n_accum = []
+      end
+      str << c
+    end
+  end
+
+  carry = []
+  level = 0
+  explode_start = nil
+  explode_end   = nil
+  str.each_with_index do |c, i|
+    if c == '['
+      level += 1
+      explode_start = i if level > 4
+    elsif c == ']'
+      level -= 1
+      if explode_start
+        explode_end = i
+        break
+      end
+    elsif explode_start && c != ','
+      carry << c.to_i
+    end
+  end
+
+  if explode_start && explode_end
+    str = [str[0..explode_start-1], '0', str[explode_end+1 ..-1]].flatten
+  else
+    return str.join
+  end
+
+  (explode_start - 1).downto(0).each do |i|
+    if /\d+/.match?(str[i])
+      str[i] = str[i].to_i + carry[0]
+      break
+    end
+  end
+
+  (explode_start + 1).upto(str.length - 1).each do |i|
+    if /\d+/.match?(str[i])
+      str[i] = str[i].to_i + carry[1]
+      break
+    end
+  end
+
+  str.join
+end
+
+def split(snail_number)
+  str = []
+  n_accum = []
+  snail_number.to_s.chars.each do |c|
+    next if c == ' '
+    if /\d/.match?(c)
+      n_accum << c
+    else
+      if n_accum.any?
+        str << n_accum.join
+        n_accum = []
+      end
+      str << c
+    end
+  end
+
+  str.each_index do |i|
+    if str[i].to_i >= 10
+      str[i] = [
+        (str[i].to_i / 2.0).round(half: :down),
+        (str[i].to_i / 2.0).round(half: :up),
+      ].to_s
+
+      break
+    end
+  end
+
+  str.join.gsub(/\s+/, '')
+end
+
+def magnitude(snail_number)
+  multiplier = 3
+  snail_number.map do |sn|
+    mag = multiplier * (sn.is_a?(Array) ? magnitude(sn) : sn)
+    multiplier -= 1
+    mag
+  end.sum
+end
+
+numbers = File.read(ARGV[0] || "input").lines.map { |s| eval s }
+
+answer = numbers.shift
+numbers.each do |sn|
+  answer = [answer, sn]
+
+  loop do
+    old_answer = answer
+    answer = eval(explode(old_answer))
+    next if old_answer != answer
+
+    old_answer = answer
+    answer = eval(split(answer))
+    next if old_answer != answer
+
+    break
+  end
+end
+
+puts magnitude(answer)
