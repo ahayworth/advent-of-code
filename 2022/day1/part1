@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'debug'
-
 # ARGF is a stream that reads from STDIN and from the files
 # named on the command line. It is very, very useful.
 elven_calories = ARGF
