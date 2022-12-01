@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'debug'
+
+# ARGF is a stream that reads from STDIN and from the files
+# named on the command line. It is very, very useful.
+elven_calories = ARGF
+  .readlines
+  # Splits array in to sub-arrays when we see a blank line.
+  .slice_after { |l| l == "\n" }
+  # Reduces each sub-arrary to the sum of the numbers within.
+  # NB: In ruby, `"\n".to_i == 0`
+  .map { |g| g.map(&:to_i).sum }
+
+# Part 2 requires us to find the sum of the three largest numbers...
+# And `max` is very flexible: https://ruby-doc.org/core-3.1.2/Enumerable.html#method-i-max
+puts elven_calories.max(3).sum

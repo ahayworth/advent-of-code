@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'debug'
+
+# ARGF is a stream that reads from STDIN and from the files
+# named on the command line. It is very, very useful.
+elven_calories = ARGF
+  .readlines
+  # Splits array in to sub-arrays when we see a blank line.
+  .slice_after { |l| l == "\n" }
+  # Reduces each sub-arrary to the sum of the numbers within.
+  # NB: In ruby, "\n".to_i == 0
+  .map { |g| g.map(&:to_i).sum }
+
+puts elven_calories.max
