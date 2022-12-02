@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+KEY = {
+  'A' => :rock,     'X' => :rock,
+  'B' => :paper,    'Y' => :paper,
+  'C' => :scissors, 'Z' => :scissors
+}
+
+# ARGF is a stream that reads from STDIN and from the files
+# named on the command line. It is very, very useful.
+strategy_guide = ARGF
+  .readlines
+  # Yields an array of `[["A", "Y"], ...]`
+  .map { |line| line.chomp.split }
+  # Yields an array of `[[:rock, :paper], ...]`
+  .map { |(a, b)| [KEY[a], KEY[b]] }
+
+score = strategy_guide.sum(0) do |(their_move, my_move)|
+  base_score = outcome_score = 0
+
+  case my_move
+  when :rock
+    base_score = 1
+    outcome_score = 6 if their_move == :scissors
+  when :paper
+    base_score = 2
+    outcome_score = 6 if their_move == :rock
+  when :scissors
+    base_score = 3
+    outcome_score = 6 if their_move == :paper
+  end
+
+  outcome_score = 3 if their_move == my_move
+
+  base_score + outcome_score
+end
+puts score
