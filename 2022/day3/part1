@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+# ARGF is a stream that reads from STDIN and from the files
+# named on the command line. It is very, very useful.
+common_types = ARGF
+  .readlines
+  # Yields an array like `['a', 'b', 'c', 'd']`
+  .map { |line| line.chomp.chars }
+  # Splits the rucksack into the two compartments.
+  # Yields an array like `[['a', 'b'], ['c', 'd']]`.
+  .map { |sack| [sack.shift(sack.size / 2), sack] }
+  # Finds the common element(s) between the two compartments.
+  # Ruby's Array can behave _like_ a set in some ways (although
+  # we also have a dedicated `Set` class if we want it). We flatten
+  # the array for convenience in the priorities step.
+  .flat_map { |(c1, c2)| c1 & c2 }
+
+# To find the sum of the priorities, we can convert the "types"
+# to their integer codepoints and then subtract a constant.
+# However:
+#
+#   'A'.ord == 65
+#   'Z'.ord == 90
+#   'a'.ord == 97
+#   'z'.ord == 122
+#
+# There is a gap in the numbering (unlike our priority scheme), and
+# 'A' comes before 'a' (also unlike our priority scheme). Darn you,
+# ASCII! The easiest thing to do in my mind is just to figure out
+# if we're looking at an upper-case type or lower-case type and then
+# simply subtract a different constant in each case.
+total = common_types.sum do |type|
+  type.ord < 97 ? type.ord - 38 : type.ord - 96
+end
+
+puts total
