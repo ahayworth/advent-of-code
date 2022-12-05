@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+stacks = []
+instructions = []
+
+# ARGF is a stream that reads from STDIN and/or files on the CLI.
+ARGF.each_line do |line|
+  # We don't need the stack-numbering or separator lines.
+  next if line.start_with?(" 1") || line.chomp.empty?
+
+  # `match = ...` returns `nil` if no match, and that's false-y.
+  if match = line.match(/^move (?<count>\d+) from (?<source>\d+) to (?<destination>\d+)/)
+    instructions << {
+      count:        match[:count].to_i,
+
+      # NB: Instructions are one-based, but our arrays are zero-based
+      source:       match[:source].to_i - 1,
+      destination:  match[:destination].to_i - 1,
+    }
+  else
+    # Working with groups of 4 characters along with their group
+    # index makes for easy parsing, so we chain our enumerables to
+    # get the behavior we want.
+    line.chomp.chars.each_slice(4).each_with_index do |group, idx|
+      # A group with no box looks like `[" ", " ", " ", " "]`
+      next if group.first == " "
+
+      # A group with a box looks like `["[", "D", "]", " "]`.
+      box = group[1]
+
+      # By using `unshift`, our stacks/arrays will visually match
+      # the input - the "top" of the input is at the "end" of the
+      # array and we can push/pop more naturally.
+      stacks[idx] ||= []
+      stacks[idx].unshift(box)
+    end
+  end
+end
+
+# Unlike part 1, we push and pop in groups here. Note that calling
+# `pop(n)`is not the same as calling `n.times { pop }` - `pop(n)`
+# pops off a *group* of the desired size, maintaining order.
+# Likewise, calling `push(*array)` maintains the order of the args
+# that you pass in.
+instructions.each do |i|
+  stacks[i[:destination]].push(*stacks[i[:source]].pop(i[:count]))
+end
+
+puts stacks.map(&:last).join
