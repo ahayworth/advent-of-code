@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+# ARGF is a stream that reads from STDIN and from the files named on the command line.
+assignments = ARGF
+  .readlines
+  # Yields `[["2-4", "6-8"], ...]
+  .map { |line| line.chomp.split(',') }
+
+# Transforms the assignment pairs into an array like:
+#
+#   `[[Range(2..4), Range(6..8)], ...]`
+#
+# We take advantage of some fun Ruby things:
+# - The `Range` class, which is just incredibly convenient.
+# - The magical "splat" operator: `*`. We use it here to convert
+#   an array into method args: https://ruby-doc.com/3.1.3/syntax/calling_methods_rdoc.html#label-Array+to+Arguments+Conversion
+assignments.map! do |pair|
+  pair.map { |assgn| Range.new(*(assgn.split("-").map(&:to_i))) }
+end
+
+# Finally we can count the number of assignment pairs where one
+# is fully contained by the other:
+puts assignments.count { |(a1, a2)| a1.cover?(a2) || a2.cover?(a1) }
