@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+
+ringbuffer = []
+
+# Rather than calculate a loop counter ourselves, let ruby do it.
+ARGF.each_char.each_with_index do |char, idx|
+  # Our desired ringbuffer size is 4, and we always add to it on
+  # every loop iteration. So, after the 4th iteration, we can always
+  # make room for a new character to maintain the desired size.
+  ringbuffer.shift if idx > 13
+  ringbuffer << char
+
+  if ringbuffer.uniq.size == 14
+    puts idx + 1 # zero-based indexing, my favorite AoC annoyance.
+    break
+  end
+end
