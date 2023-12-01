@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+string_digits = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine" ]
+regex = /(\d|#{string_digits.join("|")})/
+
+puts ARGF
+  .each_line
+  .map { |line|
+    first = line[line.index(regex)..].match(regex)[0]
+    last  = line[line.rindex(regex)..].match(regex)[0]
+
+    pair = [first, last].map do |d|
+      if idx = string_digits.find_index(d)
+        (idx + 1).to_s
+      else
+        d
+      end
+    end
+
+    pair.join.to_i
+  }
+  .sum(0)

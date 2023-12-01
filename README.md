@@ -2,6 +2,7 @@
 
 Meta-repo of Advent of Code solutions.
 
+* [2023 - ruby](/2023/ruby/README.md)
 * [2022 - ruby](/2022/README.md)
 * [2021 - ruby](/2021/README.md)
 * [2020 - ruby](/2020/ruby/README.md)
