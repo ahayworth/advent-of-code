@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+powers = ARGF.each_line.map do |line|
+  mdata = line.match(/^Game (?<id>\d+): (?<game>.+)$/)
+  game = mdata[:game]
+
+  maximums = game.split("; ").each_with_object({}) do |draw, obj|
+    draw.split(", ").each do |d|
+      mdata = d.match(/^(?<n>\d+) (?<color>red|blue|green)$/)
+      color = mdata[:color]
+      n = mdata[:n].to_i
+
+      obj[color] ||= 0
+      obj[color] = n if n > obj[color]
+    end
+  end
+
+  maximums.values.inject(:*)
+end
+
+puts powers.sum

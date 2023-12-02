@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+ids = ARGF.each_line.map do |line|
+  mdata = line.match(/^Game (?<id>\d+): (?<game>.+)$/)
+  id = mdata[:id].to_i
+  game = mdata[:game]
+
+  valid = game.split("; ").all? do |draw|
+    draw.split(", ").all? do |d|
+      mdata = d.match(/^(?<n>\d+) (?<color>red|blue|green)$/)
+      color = mdata[:color]
+      n = mdata[:n].to_i
+      (color == "red" && n <= 12) || (color == "green" && n <= 13) || (color == "blue" && n <= 14)
+    end
+  end
+
+  valid ? id : 0
+end
+
+puts ids.sum
