@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+parts = []
+symbols = []
+
+ARGF.each_line.each_with_index do |line, y|
+  line.chomp.chars.each_with_index do |c, x|
+    case c
+    when /[^\d\.]/
+      symbols << [x, y]
+    when /[\d]/
+      current_part = parts.last
+
+      if (current_part = parts.last) && current_part[:x].include?(x - 1)
+        current_part[:x] = current_part[:x].min..x
+        current_part[:number] << c
+        parts[-1] = current_part
+      else
+        parts << { number: c, x: x..x, y: y }
+      end
+    end
+  end
+end
+
+parts.select! do |part|
+  symbols.any? do |(symbol_x, symbol_y)|
+    ((part[:y] - 1)..(part[:y] + 1)).include?(symbol_y) &&
+    ((part[:x].min - 1)..(part[:x].max + 1)).include?(symbol_x)
+  end
+end
+
+puts parts.map { |part| part[:number].to_i }.sum

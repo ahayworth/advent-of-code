@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+parts = []
+gears = []
+
+ARGF.each_line.each_with_index do |line, y|
+  line.chomp.chars.each_with_index do |c, x|
+    case c
+    when '*'
+      gears << { x: x, y: y, parts: [] }
+    when /[\d]/
+      current_part = parts.last
+
+      if (current_part = parts.last) && current_part[:x].include?(x - 1)
+        current_part[:x] = current_part[:x].min..x
+        current_part[:number] << c
+        parts[-1] = current_part
+      else
+        parts << { number: c, x: x..x, y: y }
+      end
+    end
+  end
+end
+
+gears.map! do |gear|
+  gear[:parts] = parts.select do |part|
+    ((part[:y] - 1)..(part[:y] + 1)).include?(gear[:y]) &&
+    ((part[:x].min - 1)..(part[:x].max + 1)).include?(gear[:x])
+  end
+
+  gear
+end
+
+gears.map! do |gear|
+  if gear[:parts].length == 2
+    gear[:parts].map { |p| p[:number].to_i }.inject(&:*)
+  else
+    0
+  end
+end
+
+puts gears.sum
