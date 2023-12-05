@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+def count_winnings(cards, starting_at)
+  winnings = cards[starting_at].to_i
+  if winnings > 0
+    winnings += (1..winnings).map { |n| count_winnings(cards,  starting_at + n) }.sum
+  end
+
+  winnings
+end
+
+cards = ARGF.each_line.map do |line|
+  colon = line.index(":")
+  divider = line.index("|")
+
+  winning_numbers = line[colon..divider].scan(/\d+/).map(&:to_i).to_set
+  my_numbers = line[divider..].scan(/\d+/).map(&:to_i).to_set
+
+  matches = winning_numbers & my_numbers
+
+  matches.length
+end
+
+puts cards.each_index.map { |idx| count_winnings(cards, idx) }.sum + cards.length

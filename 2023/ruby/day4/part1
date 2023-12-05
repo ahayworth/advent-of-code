@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+totals = ARGF.each_line.map do |line|
+  colon = line.index(":")
+  divider = line.index("|")
+
+  winning_numbers = line[colon..divider].scan(/\d+/).map(&:to_i).to_set
+  my_numbers = line[divider..].scan(/\d+/).map(&:to_i).to_set
+
+  matches = winning_numbers & my_numbers
+
+  matches.none? ? 0 : 2 ** (matches.length - 1)
+end
+
+puts totals.sum
