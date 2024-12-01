@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+list1, list2 = ARGF
+  .each_line
+  .each_with_object([[], []]) do |line, obj|
+    a, b = line.chomp.split(/\s+/)
+    obj.first << a.to_i
+    obj.last  << b.to_i
+  end
+list2 = list2.tally
+
+total = list1.inject(0) { |total, a| total + (a * list2[a].to_i) }
+puts total

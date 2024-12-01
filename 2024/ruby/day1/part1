@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+list1, list2 = ARGF
+  .each_line
+  .each_with_object([[], []]) do |line, obj|
+    a, b = line.chomp.split(/\s+/)
+    obj.first << a.to_i
+    obj.last  << b.to_i
+  end
+
+total = list1.sort.zip(list2.sort).inject(0) { |total, (a, b) | total + (a - b).abs }
+puts total
