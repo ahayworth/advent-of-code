@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+enabled = true
+total = ARGF.read.scan(/(do\(\)|don't\(\)|mul\((\d{1,3}),(\d{1,3})\))/).sum do |match|
+  if match.first == "do()"
+    enabled = true
+  elsif match.first == "don't()"
+    enabled = false
+  end
+
+  enabled ? match[1].to_i * match[2].to_i : 0
+end
+
+puts total
